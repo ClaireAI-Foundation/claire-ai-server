@@ -9,5 +9,8 @@ module.exports = mongoose.model('User', new Schema({
   password: {
     bcrypt: true,
     type: String
-  }
+  },
+  photo: String,
+  emailVerified: Boolean,
+  provider: String
 }))

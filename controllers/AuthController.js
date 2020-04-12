@@ -55,7 +55,9 @@ module.exports.signup = async ( req, res ) => {
       const user = new User({
         name,
         email,
-        password: hash
+        password: hash,
+        provider: 'local',
+        emailVerified: false
       })
   
       await user.save()
@@ -83,7 +85,7 @@ module.exports.signup = async ( req, res ) => {
 
 
 module.exports.loginWithGoogle = async ( req, res ) => {
-  // log a user in using social accounts after authorizing
+  // log a user in using her Google account after authorizing
   // the app in the frontend
 
   const CLIENT_ID = process.env.GOOGLE_CLIENT_ID
@@ -106,25 +108,33 @@ module.exports.loginWithGoogle = async ( req, res ) => {
       // check that user is not already in the db
       let d = {
         name: data.payload.name,
-        email: data.payload.email
+        email: data.payload.email,
+        emailVerified: data.payload.email_verified,
+        photo: data.payload.picture
       }
-      const u = await User.findOne({ email: data.payload.email, signInMethod: 'google' })
+
+      const u = await User.findOne({
+        email: data.payload.email,
+        provider: 'google'
+      })
+      console.log(u)
       if (u) {
         let token = jwt.sign(d, process.env.SECRET_KEY, signingOptions)
         res.send({
           message: `Welcome ${d.name}`,
-          data: token
+          token: token
         })
       } else {
         let user = new User({
-          name: d.name,
-          email: d.email
+          ...d,
+          provider: 'google'
         })
         await user.save()
         let token = jwt.sign(d, process.env.SECRET_KEY, signingOptions)
+        console.log(token)
         res.send({
           message: `Welcome ${d.name}`,
-          data: token
+          token: token
         })
       }
     })
