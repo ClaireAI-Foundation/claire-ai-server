@@ -1,29 +1,35 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const User = require('../models/user')
-const signingOptions = { algorithm: 'RS256', expiresIn: '5h' }
+const signingOptions = { expiresIn: '5h' }
 
 module.exports.login = async ( req, res ) => {
   // Todo: do some sanitization
-  const { username, password, email } = req.body
+  const { password, email } = req.body
   let user = await User.findOne({
-    username
+    email
   })
 
   if (user) {
     // check that password matches
     const matches = bcrypt.compareSync(password, user.password)
     if (matches) {
-      // sign token
+      // create a signin token
+      const payload = {
+        name: user.name,
+        email
+      }
       const token = jwt.sign(payload, process.env.SECRET_KEY, signingOptions)
       res.send({
         message: `Welcome back ${user.name}`,
         token
       })
     } else {
+      console.log('password no match')
       res.status(400).send({ message: 'Invalid username or password' })
     }
   } else {
+    console.log('user not found')
     res.status(400).send({ message: 'Invalid username or password' })
   }
 }
@@ -34,11 +40,11 @@ module.exports.signup = async ( req, res ) => {
     
     //Todo: Do some sanitization
     const { username, name, email, password } = req.body
-    let found = await User.findOne({ username: username })
+    let found = await User.findOne({ email})
   
     if (found) {
       res.status(401).send({
-        message: 'That username already exists'
+        message: 'Sorry, an account already exists with that email'
       })
     } else {
       // proceed to save user
@@ -48,7 +54,6 @@ module.exports.signup = async ( req, res ) => {
       const hash = bcrypt.hashSync(password, salt)
       const user = new User({
         name,
-        username,
         email,
         password: hash
       })
@@ -57,7 +62,6 @@ module.exports.signup = async ( req, res ) => {
 
       // create a signin token
       const payload = {
-        username,
         name,
         email
       }
@@ -66,10 +70,11 @@ module.exports.signup = async ( req, res ) => {
   
       res.send({
         message: 'Account created successfully',
-        data: token
+        token: token
       })
     }
   } catch (error) {
+    console.log(error)
     res.status(400).send({
       message: 'Something went wrong'
     })
@@ -101,10 +106,9 @@ module.exports.loginWithGoogle = async ( req, res ) => {
       // check that user is not already in the db
       let d = {
         name: data.payload.name,
-        username: data.payload.email,
         email: data.payload.email
       }
-      const u = await User.findById(data.payload.email)
+      const u = await User.findOne({ email: data.payload.email, signInMethod: 'google' })
       if (u) {
         let token = jwt.sign(d, process.env.SECRET_KEY, signingOptions)
         res.send({
@@ -113,7 +117,8 @@ module.exports.loginWithGoogle = async ( req, res ) => {
         })
       } else {
         let user = new User({
-          _id: d.email
+          name: d.name,
+          email: d.email
         })
         await user.save()
         let token = jwt.sign(d, process.env.SECRET_KEY, signingOptions)
