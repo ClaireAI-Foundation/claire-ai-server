@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const User = require('../models/user')
-const signingOptions = { expiresIn: '5h' }
+const signingOptions = { }
 
 module.exports.login = async ( req, res ) => {
   // Todo: do some sanitization
