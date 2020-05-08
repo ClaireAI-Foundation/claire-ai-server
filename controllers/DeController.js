@@ -34,8 +34,7 @@ const runScript = function (data) {
 
 
 module.exports.interaction = function (req, res) {
-  // console.log(req.headers)
-  runScript(req.body)
+  runScript(req.body.data)
   .then(d => {
     res.send(d.toString())
   }).catch(err => {

@@ -6,7 +6,7 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken')
 
 const routeGuard = (req, res, next) => {
-  token = req.headers.authorization.split('Bearer ')[1]
+  token = req.body.token
   if (!token) res.status(401).send('Not authenticated')
   jwt.verify(token, process.env.SECRET_KEY, function (err, decoded) {
     if (err) {
@@ -20,6 +20,6 @@ const routeGuard = (req, res, next) => {
 router.post('/login', AuthController.login)
 router.post('/signup', AuthController.signup)
 router.post('/loginWithGoogle', AuthController.loginWithGoogle)
-router.post('/interaction', DeController.interaction)
+router.post('/interaction', routeGuard, DeController.interaction)
 
 module.exports = router;

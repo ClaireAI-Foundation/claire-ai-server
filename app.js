@@ -23,7 +23,7 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
-var whitelist = ['http://localhost:8080', 'https://claire-ai.netlify.com']
+var whitelist = ['http://localhost:8080', 'https://claire-ai.netlify.app']
 var corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
