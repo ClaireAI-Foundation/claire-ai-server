@@ -20,6 +20,6 @@ const routeGuard = (req, res, next) => {
 router.post('/login', AuthController.login)
 router.post('/signup', AuthController.signup)
 router.post('/loginWithGoogle', AuthController.loginWithGoogle)
-router.post('/interaction', routeGuard, DeController.interaction)
+router.post('/interaction', DeController.interaction)
 
 module.exports = router;
